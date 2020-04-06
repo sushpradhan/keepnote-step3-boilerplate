@@ -1,6 +1,11 @@
 package com.stackroute.keepnote.service;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.stackroute.keepnote.dao.ReminderDAO;
 import com.stackroute.keepnote.exception.ReminderNotFoundException;
 import com.stackroute.keepnote.model.Reminder;
 
@@ -13,6 +18,7 @@ import com.stackroute.keepnote.model.Reminder;
 * better. Additionally, tool support and additional behavior might rely on it in the 
 * future.
 * */
+@Service
 public class ReminderServiceImpl implements ReminderService {
 
 	/*
@@ -20,15 +26,20 @@ public class ReminderServiceImpl implements ReminderService {
 	 * autowiring) Please note that we should not create any object using the new
 	 * keyword.
 	 */
-
+	@Autowired
+	ReminderDAO reminderdao;
 	
+	public ReminderServiceImpl(ReminderDAO reminderdao) {
+		this.reminderdao = reminderdao;
+	}
 
 	/*
 	 * This method should be used to save a new reminder.
 	 */
 
 	public boolean createReminder(Reminder reminder) {
-		return false;
+		return reminderdao.createReminder(reminder);
+		
 
 	}
 
@@ -37,21 +48,36 @@ public class ReminderServiceImpl implements ReminderService {
 	 */
 
 	public Reminder updateReminder(Reminder reminder, int id) throws ReminderNotFoundException {
-		return reminder;
+		reminderdao.updateReminder(reminder);
+		Reminder rem=getReminderById(id);
+		if(rem==null) {
+			throw new ReminderNotFoundException("ReminderNotFoundException");
+		}
+		else {
+			return reminder;
+		}
+
 	}
 
 	/* This method should be used to delete an existing reminder. */
-	
+
 	public boolean deleteReminder(int reminderId) {
-		return false;
+		return reminderdao.deleteReminder(reminderId);
 	}
 
 	/*
 	 * This method should be used to get a reminder by reminderId.
 	 */
-	
+
 	public Reminder getReminderById(int reminderId) throws ReminderNotFoundException {
-		return null;
+		Reminder reminder= reminderdao.getReminderById(reminderId);
+		if(reminder==null) {
+			throw new ReminderNotFoundException("ReminderNotFoundException");
+		}
+		else {
+			return reminder;
+		}
+		
 
 	}
 
@@ -60,7 +86,7 @@ public class ReminderServiceImpl implements ReminderService {
 	 */
 
 	public List<Reminder> getAllReminderByUserId(String userId) {
-		return null;
+		return reminderdao.getAllReminderByUserId(userId);
 
 	}
 }

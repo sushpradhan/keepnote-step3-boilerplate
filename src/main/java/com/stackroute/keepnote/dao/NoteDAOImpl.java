@@ -1,7 +1,15 @@
 package com.stackroute.keepnote.dao;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.hibernate.HibernateException;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.stackroute.keepnote.exception.NoteNotFoundException;
 import com.stackroute.keepnote.model.Note;
 
@@ -14,50 +22,67 @@ import com.stackroute.keepnote.model.Note;
  * 					transaction. The database transaction happens inside the scope of a persistence 
  * 					context.  
  * */
-
+@Repository
+@Transactional
 public class NoteDAOImpl implements NoteDAO {
 
 	/*
 	 * Autowiring should be implemented for the SessionFactory.(Use
 	 * constructor-based autowiring.
 	 */
+	@Autowired
+	SessionFactory sessionfactory;
 
 	public NoteDAOImpl(SessionFactory sessionFactory) {
-
+		this.sessionfactory = sessionFactory;
 	}
 
 	/*
 	 * Create a new note
 	 */
-	
+
 	public boolean createNote(Note note) {
-		return false;
+		sessionfactory.getCurrentSession().save(note);
+		return true;
 
 	}
 
 	/*
 	 * Remove an existing note
 	 */
-	
+
 	public boolean deleteNote(int noteId) {
-		return false;
+		try {
+			sessionfactory.getCurrentSession().delete(getNoteById(noteId));
+		} catch (HibernateException | NoteNotFoundException e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 
 	/*
 	 * Retrieve details of all notes by userId
 	 */
-	
+
 	public List<Note> getAllNotesByUserId(String userId) {
-		return null;
+		Query query = sessionfactory.getCurrentSession().createQuery("from Note");
+		List<Note> res = query.list();
+		return res.stream().filter(n -> n.getCreatedBy().equals(userId)).collect(Collectors.toList());
 
 	}
 
 	/*
 	 * Retrieve details of a specific note
 	 */
-	
+
 	public Note getNoteById(int noteId) throws NoteNotFoundException {
-		return null;
+
+		Note note = sessionfactory.getCurrentSession().find(Note.class, noteId);
+		if (note == null) {
+			throw new NoteNotFoundException("NoteNotFoundException");
+		} else {
+			return note;
+		}
 
 	}
 
@@ -66,7 +91,8 @@ public class NoteDAOImpl implements NoteDAO {
 	 */
 
 	public boolean UpdateNote(Note note) {
-		return false;
+		sessionfactory.getCurrentSession().update(note);
+		return true;
 
 	}
 
